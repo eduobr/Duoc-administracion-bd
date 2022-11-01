@@ -1,0 +1,68 @@
+Linux - Oracle -> SEDB -> Motor BD
+
+grupos Usuarios
+
+carpetas y puntos de instalación
+
+archivos de oracle zip -> unzip en carpeta de instlacion
+
+verificar IP -ZAsignar ip a host
+
+definir variables de ambiente
+
+ejecutar Instalación
+------------------------------------------------------------------------
+Comandos LINUX
+user:root
+pass:oracle
+
+groupadd oinstall
+groupadd dba
+
+useradd oracle -g oinstall -g dba
+
+passwd oracle
+
+mkdir -p /u01/app
+
+mkdir -p /u01/install   --archivos a descomprimir
+
+chown oracle -R oinstall /u01/app/  --dar privilegios al mismo usuario , grupo oinstall
+
+chown -R oracle:oinstall  /u01/app/ --usuario oracle que pertenezca al grupo oinstall
+
+chmod -R 775 /u01/app/ --puntos de instalación
+
+cd /u01/install/
+
+unzip p13390677_112040_Linux-x86-64_1of7.zip
+
+unzip p13390677_112040_Linux-x86-64_2of7.zip
+
+ifconfig --para ver la ip´
+
+route -n
+
+cd .. 
+
+vi /etc/hosts --editor de texto
+
+presionar i para insertar texto, esc, :wq para salvar y salir
+
+su - oracle    --cambiar de usuario root a oracle
+
+vi .bash_profile --editar el bash
+
+--las variables de ambiente sirve para apuntar a un directorio
+
+source .bash_profile --indica que los cambios están hechos
+
+su root
+
+xhost + --a la terminal activa que se puedan usar el modo grafico
+
+su oracle
+
+/u01/install/database/runInstaller
+
+*el bash permite ir de un directorio a otro

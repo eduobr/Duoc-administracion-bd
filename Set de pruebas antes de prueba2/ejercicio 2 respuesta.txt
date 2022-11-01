@@ -1,0 +1,1 @@
+el tamaño minimo del tablespace del undo es el que se calcula para fluctuaciones de la carga de trabajo

@@ -1,0 +1,81 @@
+Configuración de una segunda Base de Datos. En el servidor que se le ha entregado para desarrollar este taller instale una segunda base de datos con las siguientes características:
+•	Nombre global: <contraseña_participacion>. talller.cl. Ejemplo: gp76.taller.cl
+•	Guardar los archivos de la BD en el directorio: /taller_<contraseña_participacion>  
+Ejemplo: /taller_ gp76
+•	Tamaños para la SGA 350 MB
+•	Instalar todos los esquemas de ejemplo
+•	Dejar todos los otros parámetros por omisión
+
+
+Configurar el Database Link
+•	Crear el usuario en BD recién creada: usu_<contraseña_participacion> Ejemplo: usu_gp76
+•	Otorgar privilegio de creación de database link al usuario recién creado
+•	Crear un database DBLink para leer los datos de HR en la BD orcl: link_<contraseña_participacion> Ejemplo: link_gp76
+•	Confirme que puede ver los datos de todos los países del esquema HR remotamente.
+
+Configurar un segundo listener en servidor ABD
+Se requiere que en la base de datos orcl se construya un segundo listener con las siguientes
+características:
+•	Nombre list_<contraseña_participacion> Ejemplo: list_gp76
+•	Puerto 1565
+•	Otras características Todas iguales a las definidas en el LISTENER existente
+•	INICIAR LISTENER NUEVO
+
+
+Configuración del UNDO de la base de datos orcl
+•	Modifique el tiempo de retención del undo y calcule el tamaño del tablespace undo para soportar la retención solicitada de 24 horas.
+¿Por qué razones (indique 2) recomendaría Ud. modificar el tiempo de UNDO según lo solicitado?
+
+
+Gestión del Almacenamiento en la base de datos orcl
+Se necesita un tablespace para almacenarlos objetos de una nueva aplicación llamada Remuneraciones, que se comenzará a desarrollar. Por ello se le solicita que realice las siguientes tareas:
+•	Nombre del tablespace Remu_<contraseña_participacion> Ejemplo: remu_ gp76
+•	Gestión de extensiones Gestionadas Localmente
+•	Tipo de tablespaces Permanente
+•	Nombre primer datafiles Remu_<contraseña_participacion>01.dbf
+Ubicación $ORACLE_BASE/oradata/
+Tamaño 1Mb
+•	Nombre segundo datafiles Remu_<contraseña_participacion>02.dbf
+Ubicación /oracle/
+Tamaño 2Mb
+¿Por qué recomienda Ud. crear los tablespaces en ubicaciones distintas?
+
+
+Gestión perfiles para usuarios en la base de datos orcl
+Con el objetivo de mejorar el control de sesiones en la nueva aplicación se requiere crear el siguiente perfil:
+•	Nombre del Perfil perfilremu_<contraseña_participacion> Ejemplo: perfilremu_ gp76
+•	Tiempo de conexión: 15 minutos
+•	Tiempo de inactividad: 2 minutos
+•	Sesiones simultáneas: 1
+•	Número de intentos fallidos del login: 3
+
+
+Gestión de roles para los usuarios de la base de datos orcl
+Para mejorar la seguridad en el uso de los objetos de sistema remuneraciones, se necesita un ROL con
+las siguientes características:
+•	Nombre del rol rolremu_<contraseña_participacion> ejemplo: rolremu_ gp76
+•	Privilegios Crear tablas
+•	Crear Vistas
+•	Crear procedimientos
+•	Lectura sobre la tabla COUNTRIES del esquema HR
+
+
+
+Gestión de roles para los usuarios de la base de datos orcl
+Es necesario además, contar con un nuevo usuario para el sistema de remuneraciones
+•	Nombre del usuario encargadoremu_<contraseña_participacion> Ejemplo: encargadoremu_ gp76
+•	Perfil perfilremu_<contraseña_participacion>
+•	Contraseña <contraseña_participacion>
+•	Taplespace por omisión Remu_<contraseña_participacion>
+•	Taplespace temporal TEMP
+•	Roles CONNECT y rolremu_<contraseña_participacion>
+•	Cuota del tablespace por defecto ilimitado
+
+Tareas de control.
+Para asegurarse que los requerimientos planteados por el cliente se han desarrollado correctamente, es necesario que Ud. realice el siguiente set de pruebas:
+•	Mostrar con una consulta a las vistas apropiadas, el nombre y el tamaño de los tablespaces y sus datafiles, del servidor, en la SID ORCL.
+•	Para probar que los privilegios asignados al nuevo usuario los correctos, conéctese como el usuario nuevo y:
+o	Cree una copia de la tabla COUNTRIES, llamada paises. (create table paises AS select * from locatios;)
+o	¿Qué ocurre al tratar de borrar la tabla paises? ¿Cómo se puede solucionar este problema?
+•	En otro terminal (sin desconectar el anterior) conéctese como el nuevo usuario. ¿qué ocurre y por qué?
+•	Después de estar 2 minutos inactivos ¿qué debería ocurrir y por qué?

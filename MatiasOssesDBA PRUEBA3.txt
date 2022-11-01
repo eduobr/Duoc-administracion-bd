@@ -1,0 +1,725 @@
+[oracle@localhost ~]$ su - root
+Contraseña: 
+Último inicio de sesión:sáb jun 24 02:20:49 CLT 2017en pts/2
+Último inicio de sesión fallido:sáb jun 24 02:25:07 CLT 2017en pts/1
+Hubo 1 intento de logueo fallido desde el último logueo exitosoo.
+[root@localhost ~]# mkdir -p /oracle/app/oracle/oradata/orcl
+[root@localhost ~]# chown -R oracle:oinstall /oracle/app/oracle
+[root@localhost ~]# chmod -R 775 /oracle/app/oracle
+[root@localhost ~]# mkdir -p /oracle/app/oracle/oradata/arch
+[root@localhost ~]# chown -R oracle:oinstall /oracle/app/oracle
+[root@localhost ~]# chmod -R 775 /oracle/app/oracle
+[root@localhost ~]# su - oracle
+Último inicio de sesión:sáb jun 24 02:17:21 CLT 2017en :0
+[oracle@localhost ~]$ create tablespace ENTEL15 datafile '/ms/app/oracle/oradata/orcl/1.dbf' size 1M autoextend on, '/ms/app/oracle/oradata/orcl/2.dbf' size 1M autoextend on;
+bash: create: no se encontró la orden...
+[oracle@localhost ~]$ sqlplus / as sysdba
+
+SQL*Plus: Release 11.2.0.4.0 Production on Sat Jun 24 02:30:00 2017
+
+Copyright (c) 1982, 2013, Oracle.  All rights reserved.
+
+Connected to an idle instance.
+
+SQL> startup;
+ORACLE instance started.
+
+Total System Global Area 1519898624 bytes
+Fixed Size		    2253464 bytes
+Variable Size		  436211048 bytes
+Database Buffers	 1073741824 bytes
+Redo Buffers		    7692288 bytes
+Database mounted.
+Database opened.
+SQL> create tablespace ENTEL15 datafile '/oracle/app/oracle/oradata/orcl/1.dbf' size 1M autoextend on, '/oracle/app/oracle/oradata/orcl/2.dbf' size 1M autoextend on;
+
+
+Tablespace created.
+
+SQL> SQL> create user postulante15 identified by abc1 default tablespace ENTEL15 account unlock quota unlimited on users;
+
+User created.
+
+SQL> grant all privileges to postulante15;
+
+Grant succeeded.
+
+SQL> grant recovery_catalog_owner to postulante15;
+
+Grant succeeded.
+
+SQL> grant create table to postulante15;
+
+Grant succeeded.
+
+SQL> conn postulante15/abc1
+Connected.
+SQL> CREATE SEQUENCE ID_SALUD INCREMENT BY 1;
+
+Sequence created.
+
+SQL> CREATE SEQUENCE ID_TRABAJADOR INCREMENT BY 1;
+
+Sequence created.
+
+SQL> CREATE TABLE isapres(ID_SALUD INTEGER NOT NULL PRIMARY KEY, NOMBRE VARCHAR2(30) NOT NULL, DESCUENTO NUMBER(4,2) NOT NULL);
+
+Table created.
+
+SQL> CREATE TABLE trabajadores(ID_TRABAJADOR INTEGER NOT NULL PRIMARY KEY, RUN VARCHAR2(10) NOT NULL, NOMBRE VARCHAR2(30) NOT NULL, PATERNO VARCHAR2(30) NOT NULL, MATERNO VARCHAR2(30) NOT NULL, CANT_CARGAS NUMBER(2) NOT NULL, ID_ISAPRE NUMBER NOT NULL, FOREIGN KEY (ID_ISAPRE) REFERENCES isapres(ID_SALUD));
+
+Table created.
+
+SQL> CREATE TABLE seguimiento_trabajadores(ID_SEGUIMIENTO INTEGER NOT NULL PRIMARY KEY, USU_TRANSACCION VARCHAR2(30) NOT NULL, TIPO_TRANSACCION NUMBER NOT NULL, FECHA_TRANSACCION DATE NOT NULL);
+
+Table created.
+
+SQL> CREATE SEQUENCE ID INCREMENT BY 1;
+
+Sequence created.
+
+SQL> CREATE OR REPLACE TRIGGER TR_audit_trabajador 
+
+  AFTER INSERT ON trabajadores
+
+  REFERENCING NEW AS NEW
+
+  FOR EACH ROW
+
+  BEGIN
+
+    INSERT INTO seguimiento_trabajadores VALUES (:NEW.ID_TRABAJADOR,:NEW.NOMBRE,:NEW.ID_ISAPRE, SYSDATE);
+
+  END;
+
+/   2    3    4    5    6    7    8    9   10   11   12   13   14   15  
+ 16  
+ 17  
+ 18  
+ 19  ^C
+
+SQL> CREATE OR REPLACE TRIGGER TR_audit_trabajador 
+
+  AFTER INSERT ON trabajadores
+
+  REFERENCING NEW AS NEW
+
+  FOR EACH ROW
+
+  BEGIN
+
+    INSERT INTO seguimiento_trabajadores VALUES (:NEW.ID_TRABAJADOR,:NEW.NOMBRE,:NEW.ID_ISAPRE, SYSDATE);
+
+  END;
+
+/  2    3    4    5    6    7    8    9   10   11   12   13   14   15  
+
+Trigger created.
+
+SQL> Grant select, insert, update, delete on trabajadores to postulante15;
+
+Grant succeeded.
+
+SQL> conn / as sysdba
+Connected.
+SQL> audit session by postulante15
+  2  ;
+
+Audit succeeded.
+
+SQL> audit select table, delete table, update table, insert table by postulante15;
+
+Audit succeeded.
+
+SQL> conn postulante15/abc1
+Connected.
+SQL> audit all on trabajadores by access;
+
+Audit succeeded.
+
+SQL> audit all on seguimiento_trabajadores by access;
+
+Audit succeeded.
+
+SQL> desc trabajadores;
+ Name					   Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ ID_TRABAJADOR				   NOT NULL NUMBER(38)
+ RUN					   NOT NULL VARCHAR2(10)
+ NOMBRE 				   NOT NULL VARCHAR2(30)
+ PATERNO				   NOT NULL VARCHAR2(30)
+ MATERNO				   NOT NULL VARCHAR2(30)
+ CANT_CARGAS				   NOT NULL NUMBER(2)
+ ID_ISAPRE				   NOT NULL NUMBER
+
+SQL> desc isapres;
+ Name					   Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ ID_SALUD				   NOT NULL NUMBER(38)
+ NOMBRE 				   NOT NULL VARCHAR2(30)
+ DESCUENTO				   NOT NULL NUMBER(4,2)
+
+SQL> insert into isapres values (10, 'Banmedica', 12.5);
+
+1 row created.
+
+SQL> insert into isapres values (20, 'Cruz Blanca', 12.6);
+
+1 row created.
+
+SQL> insert into isapres values (20, 'Cruz Blanca', 12.6);
+insert into isapres values (20, 'Cruz Blanca', 12.6)
+*
+ERROR at line 1:
+ORA-00001: unique constraint (POSTULANTE15.SYS_C0011227) violated
+
+
+SQL> update isapres set DESCUENTO=13 where id_salud=30;
+
+0 rows updated.
+
+SQL> update isapres set DESCUENTO=13 where id_salud=30;
+
+0 rows updated.
+
+SQL> insert into isapres values (30, 'Cruz Verde', 15);
+
+1 row created.
+
+SQL> update isapres set DESCUENTO=13 where id_salud=30;
+
+1 row updated.
+
+SQL> select count(ID_SALUD) from isapres;
+
+COUNT(ID_SALUD)
+---------------
+	      3
+
+SQL> select * from isapres;
+
+  ID_SALUD NOMBRE			   DESCUENTO
+---------- ------------------------------ ----------
+	10 Banmedica				12.5
+	20 Cruz Blanca				12.6
+	30 Cruz Verde				  13
+
+SQL> delete from isapres where id_salud=10;
+
+1 row deleted.
+
+SQL> insert into trabajadores values (1, '194169012','Matias','Osses','Carriel',2,20);
+
+1 row created.
+
+SQL> insert into trabajadores values (99, '194169015','Raul','Osses','Azocar',2,20);
+
+1 row created.
+
+SQL> select * from trabajadores;
+
+ID_TRABAJADOR RUN	 NOMBRE
+------------- ---------- ------------------------------
+PATERNO 		       MATERNO			      CANT_CARGAS
+------------------------------ ------------------------------ -----------
+ ID_ISAPRE
+----------
+	    1 194169012  Matias
+Osses			       Carriel					2
+	20
+
+	   99 194169015  Raul
+Osses			       Azocar					2
+	20
+
+ID_TRABAJADOR RUN	 NOMBRE
+------------- ---------- ------------------------------
+PATERNO 		       MATERNO			      CANT_CARGAS
+------------------------------ ------------------------------ -----------
+ ID_ISAPRE
+----------
+
+
+SQL> update trabajadores set CANT_CARGAS=3 where id_trabajador=99;
+
+1 row updated.
+
+SQL> select * from seguimiento_trabajadores;
+
+ID_SEGUIMIENTO USU_TRANSACCION		      TIPO_TRANSACCION
+-------------- ------------------------------ ----------------
+FECHA_TRANSACCION
+------------------
+	     1 Matias					    20
+24-JUN-17
+
+	    99 Raul					    20
+24-JUN-17
+
+
+SQL> delete from trabajadores where id_trabajador=99;
+
+1 row deleted.
+
+SQL> conn /as sysdba
+Connected.
+SQL> select status from v$instance;
+
+STATUS
+------------
+OPEN
+
+SQL> shutdown immediate;
+Database closed.
+Database dismounted.
+ORACLE instance shut down.
+SQL> startup mount;
+ORACLE instance started.
+
+Total System Global Area 1519898624 bytes
+Fixed Size		    2253464 bytes
+Variable Size		  436211048 bytes
+Database Buffers	 1073741824 bytes
+Redo Buffers		    7692288 bytes
+Database mounted.
+SQL> alter database archivelog;
+
+Database altered.
+
+SQL> alter database open;
+
+Database altered.
+
+SQL> select log_mode from v$database;
+
+LOG_MODE
+------------
+ARCHIVELOG
+
+SQL> archive log list;
+Database log mode	       Archive Mode
+Automatic archival	       Enabled
+Archive destination	       USE_DB_RECOVERY_FILE_DEST
+Oldest online log sequence     8
+Next log sequence to archive   10
+Current log sequence	       10
+SQL> alter system switch logfile;
+
+System altered.
+
+SQL> archive log list;
+Database log mode	       Archive Mode
+Automatic archival	       Enabled
+Archive destination	       USE_DB_RECOVERY_FILE_DEST
+Oldest online log sequence     9
+Next log sequence to archive   11
+Current log sequence	       11
+SQL> exit
+Disconnected from Oracle Database 11g Release 11.2.0.4.0 - 64bit Production
+[oracle@localhost ~]$ cd /dboracle
+-bash: cd: /dboracle: No existe el fichero o el directorio
+[oracle@localhost ~]$ ls
+Descargas   Escritorio  Música      Público
+Documentos  Imágenes    Plantillas  Vídeos
+[oracle@localhost ~]$ cd /dbms
+[oracle@localhost dbms]$ ls
+fast_recovery_area  oradata
+[oracle@localhost dbms]$ cd fast_recovery_area
+[oracle@localhost fast_recovery_area]$ ls
+ORCL
+[oracle@localhost fast_recovery_area]$ cd ORCL
+[oracle@localhost ORCL]$ ls
+archivelog  controlfile  onlinelog
+[oracle@localhost ORCL]$ cd archivelog
+[oracle@localhost archivelog]$ ls
+2017_06_24
+[oracle@localhost archivelog]$ cd 2017_06_24
+[oracle@localhost 2017_06_24]$ ls
+o1_mf_1_10_dnw31pm1_.arc
+[oracle@localhost 2017_06_24]$ ls -ltr
+total 2180
+-rw-r-----. 1 oracle oinstall 2229248 jun 24 02:52 o1_mf_1_10_dnw31pm1_.arc
+[oracle@localhost 2017_06_24]$ rman target sys/oracle catalog postulante15/abc1
+ 
+Recovery Manager: Release 11.2.0.4.0 - Production on Sat Jun 24 02:58:37 2017
+
+Copyright (c) 1982, 2011, Oracle and/or its affiliates.  All rights reserved.
+
+connected to target database: ORCL (DBID=1466660921)
+connected to recovery catalog database
+
+RMAN> create catalog;
+
+recovery catalog created
+
+RMAN> register database;
+
+database registered in recovery catalog
+starting full resync of recovery catalog
+full resync complete
+
+RMAN> backup database spfile plus archivelog;
+
+
+Starting backup at 24-JUN-17
+current log archived
+allocated channel: ORA_DISK_1
+channel ORA_DISK_1: SID=42 device type=DISK
+channel ORA_DISK_1: starting archived log backup set
+channel ORA_DISK_1: specifying archived log(s) in backup set
+input archived log thread=1 sequence=10 RECID=1 STAMP=947472758
+input archived log thread=1 sequence=11 RECID=2 STAMP=947473190
+channel ORA_DISK_1: starting piece 1 at 24-JUN-17
+channel ORA_DISK_1: finished piece 1 at 24-JUN-17
+piece handle=/dbms/fast_recovery_area/ORCL/backupset/2017_06_24/o1_mf_annnn_TAG20170624T025951_dnw3h7p2_.bkp tag=TAG20170624T025951 comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:01
+Finished backup at 24-JUN-17
+
+Starting backup at 24-JUN-17
+using channel ORA_DISK_1
+channel ORA_DISK_1: starting full datafile backup set
+channel ORA_DISK_1: specifying datafile(s) in backup set
+input datafile file number=00001 name=/dbms/oradata/ORCL/datafile/o1_mf_system_ddrdnbnr_.dbf
+input datafile file number=00002 name=/dbms/oradata/ORCL/datafile/o1_mf_sysaux_ddrdnbpn_.dbf
+input datafile file number=00005 name=/dbms/oradata/ORCL/datafile/o1_mf_example_ddrdqojv_.dbf
+input datafile file number=00003 name=/dbms/oradata/ORCL/datafile/o1_mf_undotbs1_ddrdnbpq_.dbf
+input datafile file number=00006 name=/oracle/app/oracle/oradata/orcl/1.dbf
+input datafile file number=00004 name=/dbms/oradata/ORCL/datafile/o1_mf_users_ddrdnbqp_.dbf
+input datafile file number=00007 name=/oracle/app/oracle/oradata/orcl/2.dbf
+channel ORA_DISK_1: starting piece 1 at 24-JUN-17
+channel ORA_DISK_1: finished piece 1 at 24-JUN-17
+piece handle=/dbms/fast_recovery_area/ORCL/backupset/2017_06_24/o1_mf_nnndf_TAG20170624T025952_dnw3hbbd_.bkp tag=TAG20170624T025952 comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:25
+channel ORA_DISK_1: starting full datafile backup set
+channel ORA_DISK_1: specifying datafile(s) in backup set
+including current control file in backup set
+including current SPFILE in backup set
+channel ORA_DISK_1: starting piece 1 at 24-JUN-17
+channel ORA_DISK_1: finished piece 1 at 24-JUN-17
+piece handle=/dbms/fast_recovery_area/ORCL/backupset/2017_06_24/o1_mf_ncsnf_TAG20170624T025952_dnw3j3ob_.bkp tag=TAG20170624T025952 comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:01
+channel ORA_DISK_1: starting full datafile backup set
+channel ORA_DISK_1: specifying datafile(s) in backup set
+including current SPFILE in backup set
+channel ORA_DISK_1: starting piece 1 at 24-JUN-17
+channel ORA_DISK_1: finished piece 1 at 24-JUN-17
+piece handle=/dbms/fast_recovery_area/ORCL/backupset/2017_06_24/o1_mf_nnsnf_TAG20170624T025952_dnw3j4ww_.bkp tag=TAG20170624T025952 comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:01
+Finished backup at 24-JUN-17
+
+Starting backup at 24-JUN-17
+current log archived
+using channel ORA_DISK_1
+channel ORA_DISK_1: starting archived log backup set
+channel ORA_DISK_1: specifying archived log(s) in backup set
+input archived log thread=1 sequence=12 RECID=3 STAMP=947473222
+channel ORA_DISK_1: starting piece 1 at 24-JUN-17
+channel ORA_DISK_1: finished piece 1 at 24-JUN-17
+piece handle=/dbms/fast_recovery_area/ORCL/backupset/2017_06_24/o1_mf_annnn_TAG20170624T030022_dnw3j6m5_.bkp tag=TAG20170624T030022 comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:01
+Finished backup at 24-JUN-17
+
+RMAN>  backup as copy database spfile plus archivelog;
+
+
+Starting backup at 24-JUN-17
+current log archived
+using channel ORA_DISK_1
+channel ORA_DISK_1: starting archived log copy
+input archived log thread=1 sequence=10 RECID=1 STAMP=947472758
+output file name=/dbms/fast_recovery_area/ORCL/archivelog/2017_06_24/o1_mf_1_10_dnw3jt3r_.arc RECID=5 STAMP=947473242
+channel ORA_DISK_1: archived log copy complete, elapsed time: 00:00:01
+channel ORA_DISK_1: starting archived log copy
+input archived log thread=1 sequence=11 RECID=2 STAMP=947473190
+output file name=/dbms/fast_recovery_area/ORCL/archivelog/2017_06_24/o1_mf_1_11_dnw3jv5z_.arc RECID=6 STAMP=947473243
+channel ORA_DISK_1: archived log copy complete, elapsed time: 00:00:01
+channel ORA_DISK_1: starting archived log copy
+input archived log thread=1 sequence=12 RECID=3 STAMP=947473222
+output file name=/dbms/fast_recovery_area/ORCL/archivelog/2017_06_24/o1_mf_1_12_dnw3jw8k_.arc RECID=7 STAMP=947473244
+channel ORA_DISK_1: archived log copy complete, elapsed time: 00:00:01
+channel ORA_DISK_1: starting archived log copy
+input archived log thread=1 sequence=13 RECID=4 STAMP=947473241
+output file name=/dbms/fast_recovery_area/ORCL/archivelog/2017_06_24/o1_mf_1_13_dnw3jxcr_.arc RECID=8 STAMP=947473245
+channel ORA_DISK_1: archived log copy complete, elapsed time: 00:00:01
+Finished backup at 24-JUN-17
+
+Starting backup at 24-JUN-17
+using channel ORA_DISK_1
+channel ORA_DISK_1: starting datafile copy
+input datafile file number=00001 name=/dbms/oradata/ORCL/datafile/o1_mf_system_ddrdnbnr_.dbf
+output file name=/dbms/fast_recovery_area/ORCL/datafile/o1_mf_system_dnw3jyy7_.dbf tag=TAG20170624T030046 RECID=2 STAMP=947473253
+channel ORA_DISK_1: datafile copy complete, elapsed time: 00:00:07
+channel ORA_DISK_1: starting datafile copy
+input datafile file number=00002 name=/dbms/oradata/ORCL/datafile/o1_mf_sysaux_ddrdnbpn_.dbf
+output file name=/dbms/fast_recovery_area/ORCL/datafile/o1_mf_sysaux_dnw3k667_.dbf tag=TAG20170624T030046 RECID=3 STAMP=947473259
+channel ORA_DISK_1: datafile copy complete, elapsed time: 00:00:07
+channel ORA_DISK_1: starting datafile copy
+input datafile file number=00005 name=/dbms/oradata/ORCL/datafile/o1_mf_example_ddrdqojv_.dbf
+output file name=/dbms/fast_recovery_area/ORCL/datafile/o1_mf_example_dnw3kfm6_.dbf tag=TAG20170624T030046 RECID=4 STAMP=947473265
+channel ORA_DISK_1: datafile copy complete, elapsed time: 00:00:07
+channel ORA_DISK_1: starting datafile copy
+input datafile file number=00003 name=/dbms/oradata/ORCL/datafile/o1_mf_undotbs1_ddrdnbpq_.dbf
+output file name=/dbms/fast_recovery_area/ORCL/datafile/o1_mf_undotbs1_dnw3knob_.dbf tag=TAG20170624T030046 RECID=5 STAMP=947473269
+channel ORA_DISK_1: datafile copy complete, elapsed time: 00:00:03
+channel ORA_DISK_1: starting datafile copy
+input datafile file number=00006 name=/oracle/app/oracle/oradata/orcl/1.dbf
+output file name=/dbms/fast_recovery_area/ORCL/datafile/o1_mf_entel15_dnw3kqqx_.dbf tag=TAG20170624T030046 RECID=6 STAMP=947473271
+channel ORA_DISK_1: datafile copy complete, elapsed time: 00:00:01
+channel ORA_DISK_1: starting datafile copy
+copying current control file
+output file name=/dbms/fast_recovery_area/ORCL/controlfile/o1_mf_TAG20170624T030046_dnw3krxd_.ctl tag=TAG20170624T030046 RECID=7 STAMP=947473273
+channel ORA_DISK_1: datafile copy complete, elapsed time: 00:00:01
+channel ORA_DISK_1: starting datafile copy
+input datafile file number=00004 name=/dbms/oradata/ORCL/datafile/o1_mf_users_ddrdnbqp_.dbf
+output file name=/dbms/fast_recovery_area/ORCL/datafile/o1_mf_users_dnw3kt0x_.dbf tag=TAG20170624T030046 RECID=8 STAMP=947473274
+channel ORA_DISK_1: datafile copy complete, elapsed time: 00:00:01
+channel ORA_DISK_1: starting datafile copy
+input datafile file number=00007 name=/oracle/app/oracle/oradata/orcl/2.dbf
+output file name=/dbms/fast_recovery_area/ORCL/datafile/o1_mf_entel15_dnw3kv62_.dbf tag=TAG20170624T030046 RECID=9 STAMP=947473275
+channel ORA_DISK_1: datafile copy complete, elapsed time: 00:00:01
+channel ORA_DISK_1: starting full datafile backup set
+channel ORA_DISK_1: specifying datafile(s) in backup set
+including current SPFILE in backup set
+channel ORA_DISK_1: starting piece 1 at 24-JUN-17
+channel ORA_DISK_1: finished piece 1 at 24-JUN-17
+piece handle=/dbms/fast_recovery_area/ORCL/backupset/2017_06_24/o1_mf_nnsnf_TAG20170624T030046_dnw3kw9j_.bkp tag=TAG20170624T030046 comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:01
+channel ORA_DISK_1: starting full datafile backup set
+channel ORA_DISK_1: specifying datafile(s) in backup set
+including current SPFILE in backup set
+channel ORA_DISK_1: starting piece 1 at 24-JUN-17
+channel ORA_DISK_1: finished piece 1 at 24-JUN-17
+piece handle=/dbms/fast_recovery_area/ORCL/backupset/2017_06_24/o1_mf_nnsnf_TAG20170624T030046_dnw3kxf2_.bkp tag=TAG20170624T030046 comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:01
+Finished backup at 24-JUN-17
+
+Starting backup at 24-JUN-17
+current log archived
+using channel ORA_DISK_1
+channel ORA_DISK_1: starting archived log copy
+input archived log thread=1 sequence=14 RECID=9 STAMP=947473278
+output file name=/dbms/fast_recovery_area/ORCL/archivelog/2017_06_24/o1_mf_1_14_dnw3kz5v_.arc RECID=10 STAMP=947473279
+channel ORA_DISK_1: archived log copy complete, elapsed time: 00:00:01
+Finished backup at 24-JUN-17
+
+RMAN> list backup;
+
+
+List of Backup Sets
+===================
+
+
+BS Key  Size       Device Type Elapsed Time Completion Time
+------- ---------- ----------- ------------ ---------------
+40      27.22M     DISK        00:00:00     24-JUN-17      
+        BP Key: 41   Status: AVAILABLE  Compressed: NO  Tag: TAG20170624T025951
+        Piece Name: /dbms/fast_recovery_area/ORCL/backupset/2017_06_24/o1_mf_annnn_TAG20170624T025951_dnw3h7p2_.bkp
+
+  List of Archived Logs in backup set 40
+  Thrd Seq     Low SCN    Low Time  Next SCN   Next Time
+  ---- ------- ---------- --------- ---------- ---------
+  1    10      1081000    24-JUN-17 1083786    24-JUN-17
+  1    11      1083786    24-JUN-17 1089182    24-JUN-17
+
+BS Key  Type LV Size       Device Type Elapsed Time Completion Time
+------- ---- -- ---------- ----------- ------------ ---------------
+51      Full    1.18G      DISK        00:00:23     24-JUN-17      
+        BP Key: 56   Status: AVAILABLE  Compressed: NO  Tag: TAG20170624T025952
+        Piece Name: /dbms/fast_recovery_area/ORCL/backupset/2017_06_24/o1_mf_nnndf_TAG20170624T025952_dnw3hbbd_.bkp
+  List of Datafiles in backup set 51
+  File LV Type Ckp SCN    Ckp Time  Name
+  ---- -- ---- ---------- --------- ----
+  1       Full 1089568    24-JUN-17 /dbms/oradata/ORCL/datafile/o1_mf_system_ddrdnbnr_.dbf
+  2       Full 1089568    24-JUN-17 /dbms/oradata/ORCL/datafile/o1_mf_sysaux_ddrdnbpn_.dbf
+  3       Full 1089568    24-JUN-17 /dbms/oradata/ORCL/datafile/o1_mf_undotbs1_ddrdnbpq_.dbf
+  4       Full 1089568    24-JUN-17 /dbms/oradata/ORCL/datafile/o1_mf_users_ddrdnbqp_.dbf
+  5       Full 1089568    24-JUN-17 /dbms/oradata/ORCL/datafile/o1_mf_example_ddrdqojv_.dbf
+  6       Full 1089568    24-JUN-17 /oracle/app/oracle/oradata/orcl/1.dbf
+  7       Full 1089568    24-JUN-17 /oracle/app/oracle/oradata/orcl/2.dbf
+
+BS Key  Type LV Size       Device Type Elapsed Time Completion Time
+------- ---- -- ---------- ----------- ------------ ---------------
+52      Full    9.36M      DISK        00:00:01     24-JUN-17      
+        BP Key: 57   Status: AVAILABLE  Compressed: NO  Tag: TAG20170624T025952
+        Piece Name: /dbms/fast_recovery_area/ORCL/backupset/2017_06_24/o1_mf_ncsnf_TAG20170624T025952_dnw3j3ob_.bkp
+  SPFILE Included: Modification time: 24-JUN-17
+  SPFILE db_unique_name: ORCL
+  Control File Included: Ckp SCN: 1089581      Ckp time: 24-JUN-17
+
+BS Key  Type LV Size       Device Type Elapsed Time Completion Time
+------- ---- -- ---------- ----------- ------------ ---------------
+53      Full    80.00K     DISK        00:00:00     24-JUN-17      
+        BP Key: 58   Status: AVAILABLE  Compressed: NO  Tag: TAG20170624T025952
+        Piece Name: /dbms/fast_recovery_area/ORCL/backupset/2017_06_24/o1_mf_nnsnf_TAG20170624T025952_dnw3j4ww_.bkp
+  SPFILE Included: Modification time: 24-JUN-17
+  SPFILE db_unique_name: ORCL
+
+BS Key  Size       Device Type Elapsed Time Completion Time
+------- ---------- ----------- ------------ ---------------
+74      468.00K    DISK        00:00:00     24-JUN-17      
+        BP Key: 76   Status: AVAILABLE  Compressed: NO  Tag: TAG20170624T030022
+        Piece Name: /dbms/fast_recovery_area/ORCL/backupset/2017_06_24/o1_mf_annnn_TAG20170624T030022_dnw3j6m5_.bkp
+
+  List of Archived Logs in backup set 74
+  Thrd Seq     Low SCN    Low Time  Next SCN   Next Time
+  ---- ------- ---------- --------- ---------- ---------
+  1    12      1089182    24-JUN-17 1089587    24-JUN-17
+
+BS Key  Type LV Size       Device Type Elapsed Time Completion Time
+------- ---- -- ---------- ----------- ------------ ---------------
+107     Full    80.00K     DISK        00:00:00     24-JUN-17      
+        BP Key: 110   Status: AVAILABLE  Compressed: NO  Tag: TAG20170624T030046
+        Piece Name: /dbms/fast_recovery_area/ORCL/backupset/2017_06_24/o1_mf_nnsnf_TAG20170624T030046_dnw3kw9j_.bkp
+  SPFILE Included: Modification time: 24-JUN-17
+  SPFILE db_unique_name: ORCL
+
+BS Key  Type LV Size       Device Type Elapsed Time Completion Time
+------- ---- -- ---------- ----------- ------------ ---------------
+108     Full    80.00K     DISK        00:00:00     24-JUN-17      
+        BP Key: 111   Status: AVAILABLE  Compressed: NO  Tag: TAG20170624T030046
+        Piece Name: /dbms/fast_recovery_area/ORCL/backupset/2017_06_24/o1_mf_nnsnf_TAG20170624T030046_dnw3kxf2_.bkp
+  SPFILE Included: Modification time: 24-JUN-17
+  SPFILE db_unique_name: ORCL
+
+RMAN> LIST COPY OF DATABASE ARCHIVELOG ALL;
+
+starting full resync of recovery catalog
+full resync complete
+List of Datafile Copies
+=======================
+
+Key     File S Completion Time Ckp SCN    Ckp Time       
+------- ---- - --------------- ---------- ---------------
+114     1    A 24-JUN-17       1090429    24-JUN-17      
+        Name: /dbms/fast_recovery_area/ORCL/datafile/o1_mf_system_dnw3jyy7_.dbf
+        Tag: TAG20170624T030046
+
+115     2    A 24-JUN-17       1090435    24-JUN-17      
+        Name: /dbms/fast_recovery_area/ORCL/datafile/o1_mf_sysaux_dnw3k667_.dbf
+        Tag: TAG20170624T030046
+
+117     3    A 24-JUN-17       1090441    24-JUN-17      
+        Name: /dbms/fast_recovery_area/ORCL/datafile/o1_mf_undotbs1_dnw3knob_.dbf
+        Tag: TAG20170624T030046
+
+120     4    A 24-JUN-17       1090445    24-JUN-17      
+        Name: /dbms/fast_recovery_area/ORCL/datafile/o1_mf_users_dnw3kt0x_.dbf
+        Tag: TAG20170624T030046
+
+116     5    A 24-JUN-17       1090438    24-JUN-17      
+        Name: /dbms/fast_recovery_area/ORCL/datafile/o1_mf_example_dnw3kfm6_.dbf
+        Tag: TAG20170624T030046
+
+118     6    A 24-JUN-17       1090443    24-JUN-17      
+        Name: /dbms/fast_recovery_area/ORCL/datafile/o1_mf_entel15_dnw3kqqx_.dbf
+        Tag: TAG20170624T030046
+
+121     7    A 24-JUN-17       1090446    24-JUN-17      
+        Name: /dbms/fast_recovery_area/ORCL/datafile/o1_mf_entel15_dnw3kv62_.dbf
+        Tag: TAG20170624T030046
+
+List of Archived Log Copies for database with db_unique_name ORCL
+=====================================================================
+
+Key     Thrd Seq     S Low Time 
+------- ---- ------- - ---------
+93      1    10      A 24-JUN-17
+        Name: /dbms/fast_recovery_area/ORCL/archivelog/2017_06_24/o1_mf_1_10_dnw3jt3r_.arc
+
+30      1    10      A 24-JUN-17
+        Name: /dbms/fast_recovery_area/ORCL/archivelog/2017_06_24/o1_mf_1_10_dnw31pm1_.arc
+
+94      1    11      A 24-JUN-17
+        Name: /dbms/fast_recovery_area/ORCL/archivelog/2017_06_24/o1_mf_1_11_dnw3jv5z_.arc
+
+35      1    11      A 24-JUN-17
+        Name: /dbms/fast_recovery_area/ORCL/archivelog/2017_06_24/o1_mf_1_11_dnw3h6nt_.arc
+
+95      1    12      A 24-JUN-17
+        Name: /dbms/fast_recovery_area/ORCL/archivelog/2017_06_24/o1_mf_1_12_dnw3jw8k_.arc
+
+50      1    12      A 24-JUN-17
+        Name: /dbms/fast_recovery_area/ORCL/archivelog/2017_06_24/o1_mf_1_12_dnw3j616_.arc
+
+96      1    13      A 24-JUN-17
+        Name: /dbms/fast_recovery_area/ORCL/archivelog/2017_06_24/o1_mf_1_13_dnw3jxcr_.arc
+
+85      1    13      A 24-JUN-17
+        Name: /dbms/fast_recovery_area/ORCL/archivelog/2017_06_24/o1_mf_1_13_dnw3jsk0_.arc
+
+130     1    14      A 24-JUN-17
+        Name: /dbms/fast_recovery_area/ORCL/archivelog/2017_06_24/o1_mf_1_14_dnw3kz5v_.arc
+
+106     1    14      A 24-JUN-17
+        Name: /dbms/fast_recovery_area/ORCL/archivelog/2017_06_24/o1_mf_1_14_dnw3kyjd_.arc
+
+
+RMAN> backup database;
+
+Starting backup at 24-JUN-17
+using channel ORA_DISK_1
+channel ORA_DISK_1: starting full datafile backup set
+channel ORA_DISK_1: specifying datafile(s) in backup set
+input datafile file number=00001 name=/dbms/oradata/ORCL/datafile/o1_mf_system_ddrdnbnr_.dbf
+input datafile file number=00002 name=/dbms/oradata/ORCL/datafile/o1_mf_sysaux_ddrdnbpn_.dbf
+input datafile file number=00005 name=/dbms/oradata/ORCL/datafile/o1_mf_example_ddrdqojv_.dbf
+input datafile file number=00003 name=/dbms/oradata/ORCL/datafile/o1_mf_undotbs1_ddrdnbpq_.dbf
+input datafile file number=00006 name=/oracle/app/oracle/oradata/orcl/1.dbf
+input datafile file number=00004 name=/dbms/oradata/ORCL/datafile/o1_mf_users_ddrdnbqp_.dbf
+input datafile file number=00007 name=/oracle/app/oracle/oradata/orcl/2.dbf
+channel ORA_DISK_1: starting piece 1 at 24-JUN-17
+channel ORA_DISK_1: finished piece 1 at 24-JUN-17
+piece handle=/dbms/fast_recovery_area/ORCL/backupset/2017_06_24/o1_mf_nnndf_TAG20170624T030212_dnw3mnk1_.bkp tag=TAG20170624T030212 comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:35
+channel ORA_DISK_1: starting full datafile backup set
+channel ORA_DISK_1: specifying datafile(s) in backup set
+including current control file in backup set
+including current SPFILE in backup set
+channel ORA_DISK_1: starting piece 1 at 24-JUN-17
+channel ORA_DISK_1: finished piece 1 at 24-JUN-17
+piece handle=/dbms/fast_recovery_area/ORCL/backupset/2017_06_24/o1_mf_ncsnf_TAG20170624T030212_dnw3nrkp_.bkp tag=TAG20170624T030212 comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:01
+Finished backup at 24-JUN-17
+
+RMAN> backup tablespace ENTEL15;
+
+Starting backup at 24-JUN-17
+using channel ORA_DISK_1
+channel ORA_DISK_1: starting full datafile backup set
+channel ORA_DISK_1: specifying datafile(s) in backup set
+input datafile file number=00006 name=/oracle/app/oracle/oradata/orcl/1.dbf
+input datafile file number=00007 name=/oracle/app/oracle/oradata/orcl/2.dbf
+channel ORA_DISK_1: starting piece 1 at 24-JUN-17
+channel ORA_DISK_1: finished piece 1 at 24-JUN-17
+piece handle=/dbms/fast_recovery_area/ORCL/backupset/2017_06_24/o1_mf_nnndf_TAG20170624T030304_dnw3o93o_.bkp tag=TAG20170624T030304 comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:01
+Finished backup at 24-JUN-17
+
+RMAN> backup user postulante15;
+
+RMAN-00571: ===========================================================
+RMAN-00569: =============== ERROR MESSAGE STACK FOLLOWS ===============
+RMAN-00571: ===========================================================
+RMAN-00558: error encountered while parsing input commands
+RMAN-01009: syntax error: found "identifier": expecting one of: "archivelog, as, auxiliary, backupset, backup, channel, check, controlfilecopy, copies, copy, cumulative, current, database, datafilecopy, datafile, db_file_name_convert, db_recovery_file_dest, device, diskratio, duration, filesperset, force, format, for, from, full, incremental, keep, maxsetsize, nochecksum, noexclude, nokeep, not, pool, proxy, recovery, reuse, section, skip readonly, skip, spfile, tablespace, tag, to, validate, ("
+RMAN-01008: the bad identifier was: user
+RMAN-01007: at line 1 column 8 file: standard input
+
+RMAN> exit
+
+
+Recovery Manager complete.
+[oracle@localhost 2017_06_24]$ cd
+[oracle@localhost ~]$ sqlplus / as sysdba
+
+SQL*Plus: Release 11.2.0.4.0 Production on Sat Jun 24 03:05:32 2017
+
+Copyright (c) 1982, 2013, Oracle.  All rights reserved.
+
+
+Connected to:
+Oracle Database 11g Release 11.2.0.4.0 - 64bit Production
+
+SQL> set line 100;
+SQL> set pages 100;
+SQL> 

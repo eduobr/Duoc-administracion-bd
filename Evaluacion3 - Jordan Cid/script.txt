@@ -1,0 +1,40 @@
+--------------------------------------------------------
+-- Archivo creado  - lunes-junio-11-2018   
+--------------------------------------------------------
+--------------------------------------------------------
+--  DDL for Table AUDIT_PRODUCTOS_ELIMINADOS
+--------------------------------------------------------
+
+  CREATE TABLE AUDIT_PRODUCTOS_ELIMINADOS 
+   (	PRODUCTO_ID NUMBER, 
+	FECHA_ELIMINACION DATE, 
+	NOMBRE_USUARIO VARCHAR2(50 BYTE));
+
+--------------------------------------------------------
+--  DDL for Table AUDIT_PRODUCTOS_PRECIO
+--------------------------------------------------------
+
+  CREATE TABLE AUDIT_PRODUCTOS_PRECIO 
+   (	PRODUCTO_ID NUMBER, 
+	PRODUCTO_ANTIGUO NUMBER, 	PRODUCTO_NUEVO NUMBER, 		FECHA_MODIFICACION TIMESTAMP (0), 	NOMBRE_USUARIO VARCHAR2(50 BYTE)
+);
+--------------------------------------------------------
+--  DDL for Table FACTURAS
+--------------------------------------------------------
+
+  CREATE TABLE PRODUCTOS 
+   (	PRODUCTO_ID NUMBER, 
+	NOMBRE VARCHAR2(50 BYTE),  	PRECIO NUMBER,  	STOCK NUMBER
+   );
+--------------------------------------------------------
+
+--------------------------------------------------------
+--  Constraints for Table FACTURAS
+--------------------------------------------------------
+
+  ALTER TABLE PRODUCTOS ADD PRIMARY KEY (PRODUCTO_ID);
+--------------------------------------------------------
+
+  ALTER TABLE AUDIT_PRODUCTOS_PRECIO ADD CONSTRAINT FK_PRO_PRE FOREIGN KEY (PRODUCTO_ID) REFERENCES PRODUCTOS (PRODUCTO_ID) ENABLE;
+
+  ALTER TABLE AUDIT_PRODUCTOS_ELIMINADOS ADD CONSTRAINT FK_PRO_ELI FOREIGN KEY (PRODUCTO_ID) REFERENCES PRODUCTOS (PRODUCTO_ID) ENABLE;

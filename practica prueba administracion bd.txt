@@ -1,0 +1,307 @@
+groupadd oinstall
+groupadd dba
+
+useradd Eobreque -g oinstall -g dba
+passwd oracle
+
+mkdir -p /u01/app
+mkdir -p /u01/install
+
+chown -R Eobreque:oinstall /u01/app/
+chmod -R 775 /u01/app/
+
+cd /u01/install
+
+unzip
+unzip
+
+ifconfig
+
+su - Eobreque
+
+vi /etc/hosts
+
+vi .bash_profile
+
+source .bash_profile
+
+su - root
+
+xhost + 
+
+su - Eobreque
+
+/u01/install/database/runInstaller
+
+netca
+
+dbca
+
+global database name:
+use the same administrative password
+Multiplex redo log:
+/u01/app/oracle/oradata
+/u01/app/oracle/fast_recovery_area
+password magnament hr hr
+
+
+Practica 2
+
+groupadd oinstall
+groupadd dba
+
+useradd Eobreque -g oinstall -g dba
+passwd oracle
+
+mkdir -p /u01/app
+mkdir -p /u01/install
+
+chown -R Eobreque:oinstall /u01/app
+chmod -R 775 /u01/app
+
+cd /u01/install 
+
+unzip
+unzip 
+
+su - Eobreque
+
+ifconfig
+
+vi /etc/hosts
+
+vi .bash_profile
+
+source .bash_profile
+
+su - root
+
+xhost +
+
+/u01/app/install/runInstaller
+
+netca
+
+dbca
+
+global database
+same administrative password
+multiplex redo logs
+/u01/app/oracle/oradata
+/u01/app/oracle/fast_recovery_area
+
+
+Practica 3
+
+groupadd oinstall
+groupadd dba
+
+useradd Eobreque -g oinstall -g dba
+passwd oracle
+
+mkdir -p /u01/app
+mkdir -p /u01/install
+
+chown -R Eobreque:oinstall /u01/app
+chmod -R 775 /u01/app
+
+cd /u01/app
+
+unzip
+unzip
+
+ifconfig
+
+xhost +
+
+su - Eobreque
+vi /etc/hosts
+
+vi .bash_profile
+source bash_profile
+
+/u01/install/database/runInstaller
+
+netca
+dbca
+
+globaldatabase name
+redolog
+/u01/app/oracle/oradata
+/u01/app/oracle/fast_recovery_area
+same administrative password
+password magnament hr hr
+
+
+
+Practica 3
+
+groupadd oinstall
+groupadd dba
+
+useradd Eobreque -g oinstall -g dba
+
+mkdir -p /u01/app
+mkdir -p /u01/install
+
+chown -R Eobreque:oinstall /u01/app
+chmod -R 775 /u01/app
+
+cd /u01/install
+
+unzip
+unzip
+
+xhost +
+
+ifconfig
+
+vi /etc/hosts
+
+passwd Eobreque
+
+ifconfig
+
+vi /etc/hosts
+
+su - Eobreque
+
+vi .bash_profile
+source .bash_profile
+
+/u01/install/database/runInstaller
+
+netca
+
+dbca
+global database name
+Multiplex redo log
+/u01/app/oracle/oradata
+/u01/app/database/runInstaller
+password magnament hr hr
+sample database
+
+
+Practica 4
+
+groupadd oinstall
+groupadd dba
+
+useradd Eobreque -g oinstall -g dba
+
+passwd Eobreque
+
+mkdir -p /u01/app
+mkdir -p /u01/install
+
+chown -R Eobreque:oinstall /u01/app
+chmod -R 775 /u01/app
+
+cd /u01/install
+
+unzip
+unzip 
+
+xhost +
+
+ifconfig
+vi /etc/hosts
+
+su - Eobreque
+
+vi .bash_profile
+source .bash_profile
+
+/u01/install/database/runInstaller
+
+netca
+
+single instance database
+only database
+
+dbca
+global database name
+Multi redo logs:
+/u01/app/oracle/oradata
+/u01/app/oracle/fast_recovery_area
+same password magnament
+
+emctl start dbconsole
+
+sqlplus hr
+
+Select *  from employees
+
+SYS
+oracle
+SYSDBA
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,186 @@
+﻿sqlplus / as sysdba
+
+sql> startup;
+
+Crear tablespace
+sql> create tablespace micomunidad datafile '/u02/oradata/orcl/mi_comunidad01.dbf' size 20M, 
+'/u02/oradata/orcl/mi_comunidad02.dbf' size 20M;
+
+AUTOEXTEND ON para hacerlo autoincrementable
+
+Crear usuario/contraseña/asignamos tablespace por defecto/pude ocupar ilimitado en micomunidad
+sql> create user dba_comunidad_ms identified by ms01 default tablespace micomunidad quota unlimited on micomunidad;
+
+Privilegios de conexion
+sql>grant create table, connect, create trigger to dba_comunidad_ms;
+
+Conectarse como el usuario
+sql> conn dba_comunidad_ms/ms01;
+
+Comprobar el estado de la auditoria estandar(integradas de oracle)
+
+-DB(se guarda la auditoria pero no la consulta sql)
+-DB,EXTENDED(si se guarda el sql)
+
+Primero conectarse con el sysdba, abrimos otra terminal:
+
+rlwrap sqlplus / as sysdba;
+
+sql> show parameter audit_trail;
+sql> alter system set audit_trail=DB,EXTENDED scope=spfile;
+
+una vez aleterada debemos bajar la bd y volverla a subir
+
+sql> shu inmediate
+sql> startup;
+
+revisar que se haya alterado
+sql> show parameter audit_trail;
+
+auditar sentencias en la misma terminal( on nombre de usuario.nombre de tabla)
+sql> audit select, update, delete, insert on dba_comunidad_ms.facturas;
+
+volvemos a la otra terminal y tenemos  que salir con exit; y volver a entrar
+
+sql> rlwrap sqlplus / as sysdba;
+
+conectarse con el usuario
+sql> conn dba_comunidad_ms/ms01;
+
+insertar filas(no copiar y pegar ya que las comillas de texto plano son distintas)
+sql>insert into	PRODUCTOS values(1, ‘papas fritas’, 500, 250);
+sql>insert into PRODUCTOS values(2, ‘chiquitin’, 200, 50);
+sql>insert into PRODUCTOS values(3, ‘phanta’, 770, 100);
+sql>insert into PRODUCTOS values(4, ‘lechuga’, 220, 99);
+sql>insert into PRODUCTOS values(5, ‘llavero’, 150, 200);
+
+para guardar todo
+sql>commit; 
+
+borramos una factura
+sql> delete from facturas where factura_id = 2;
+
+sql>select * from facturas;
+
+sql> commit;
+
+verificamos los registros de auditoria anteriores(esto debemos hacerlo como sysdba) debemos cambiar a la otra terminal
+sql> select username, action_name, sql_text from dba_audit_object;
+
+Configurar auditoria basadas en valores
+
+
+
+
+Proteger la base de datos ante posibles fallos
+como sysdba
+-dos medidas de seguridad para el archivo de control
+ .crear archivo de traza
+ sql> alter database backup controlfile to trace as '/u02/ctlbkp.ctl';
+
+ abrimos otra terminal y lo revisamos
+ cd /u02/
+ ls
+ vi ctlbkp.ctl - es el archivo de control/mapa de la base datos/ruta de datafiles, al crear un archivo de traza si podemos ver el contenido no como los datafiles que estan encriptados
+
+ .multiplexarlo, tenemos que brir una terminal como sysdba
+ sql> show parameter control_files;
+ crear un tercero, para esto exportamos el pfile
+ sql> create pfile='/u02/pfile.ora' from spfile;
+ debemos bajar la base de datos para manipular los controlfiles
+ sql>shu inmediate;
+ abrimos otra terminal
+ cd /u02/oradata/orcl/
+ vemos los control file
+ ls
+ cp control01.ctl /u02/control03.ctl -copiamos el archivo control01.ctl
+ cd /u02/
+ ls
+ editamos nuestro archivo pfile que contiene todos los parametros
+ vi pfile.ora
+ vamos a la linea donde dice #Restore Controlfile y agreamos nuestra ruta
+ , 'u02/control03.ctl'
+ :wq
+ agregamos la nueva ruta ahora podemos subir la base de datos cargando estos parametros desde el pfile y el pfile a la vez contiene el control03
+ vamos a la terminal que bajamos nuestra bd y añadimos la siguiente linea
+ sql> startup pfile='/u02/pfile.ora';
+ y se iniciará la bd con los parametros de ese archivo el cual contiene una ruta adicional para los control file
+ con esto también completamos la medida de seguridad para el archivo de parametros
+
+-medida de seguridad para los redo log
+sql> select group#, members from v$log;
+sql> alter database add_logfile group 8 size 102400k; - 1mmb apros
+sql>alter database add logfile member '/u02/miembro8.log' to group 8;
+los members son multiplexasiones, uno solamente de los archivos se escribe el otro miembro es una copia espejo, en caso de perderse uno, para crearlo deberiamos hacer una copia del que ya queda
+
+-configurar la base de datos en modo ArchiveLog
+el modo archive log lo que hace es hacer un respaldo de los redo log a medida que se van cambiando
+
+primero nos conectamos como root
+su - root
+creamos una carpeta en la raiz
+mkdir /archivelogs
+chown -R oracle:dba /archivelogs/
+chmod -R 775 /archivelogs
+
+vamos a otra terminal como sysdba y decimos dónde se van a guardar los archive logs pero primero debemos cargar lo del pfile al spfile
+creamos el spfile desde lo que habia en memoria
+sql> create spfile from memory;
+sql>shu inmediate
+al hacer startup pfile lo caramos desde una fuente externa y oracle para seguir cambiando parametros me pide que el spfile tena lo mismo que tiene esa fuente externa
+ahora volvemos a levantar la bd ya que tenemos nuestro spfile
+sql> startup;
+sql> alter system set log_archive_dest_1='location=/archivelogs' scope=spfile;
+volvemos a bajar la bd para cambiar la bd al modo archive log que es si un redo log se escribe completamente se hace un respaldo de el en la carpeta que definimos nosotros que se llama archive logs
+sql> shu inmediate;
+se carga el control file cuando esta en mount pero no los data file que es donde esta la informacion de las tablas
+sql> startup mount;
+cambiamos la bd al modo archive log
+sql> alter database archivelog;
+como estaba en mount ahora debemos abrir la bd con los datafiles para dejarla disponible
+sql> alter database open;
+ahora estamos en modo archive log
+si cambiamos manualmente el grupo de redo log deberiamos ver un respaldo
+los redo log solo se cambian cuando se hacen muchas transacciones y se termina de escribir un redo log para no esperar tanto obliamos a que se cambie de grupo
+sql> alter system switch logfile;
+vsmos a otra terminal como root
+cd /archivelogs/
+ls
+y podemos ver el respaldo que se acaba de hacer porque cambio de grupo
+
+Tarea 3 
+-efectuar respaldo
+como usuario oracle
+lsnrctl start
+emctl start dbconsole
+en el enterprise managaer
+availability > schedule backup
+presionamos en whole database y presionamos en schedule customized backup
+
+Tarea 4
+vamos a la terminal de root
+mkdir /exp_comunidad
+chmod -R 775 /exp_comunidad
+chown -R oracle:dba /exp_comunidad/
+luego vamos al usuario sysdba que tiene el sqlplus
+sql> create directory expcomunidad as / '/exp_comunidad';
+ahora ya podemos hacer las importaciones y las exportaciones
+sql> create user pruebas_comunidad identified by ms01 default tablespace micomunidad quota unlimited on micomunidad;
+sql>grant connect, create table, create trigger to pruebas_comunidad;
+ahora vamos a una terminal de linux
+exportamos al usuario
+expdp system/duoc schemas=dba_comunidad_ms dumpfile=expcomunidad:comunidad.dmp logfile=expcomunidad.logcomuni.log;
+cd /exp_comunidad/
+ls
+y podemos ver el archivo comunidad.dmp ahi esta toda la informacion del usuario que creamos al inicio
+impdp system/duoc dumpfile=expcomunidad:comunidad.dmp logfile=logsubida.log remap schema=dba_comunidad_ms:pruebas_comunidad;
+esto va a pasar desde el archivo anterior a este nuevo usuario
+para probarlo nos conectamos con el nuevo usuario
+sql> conn pruebas_comunidad;
+sql> select table_name from user_tables;
+y nos deberian aparecer las tablas del anterior usuario en el nuevo usuario
+
+
+
+video Prueba 3
+https://www.youtube.com/watch?v=GGysw1Ijpxo

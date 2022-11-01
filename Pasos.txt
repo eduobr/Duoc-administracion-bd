@@ -1,0 +1,251 @@
+Linux - Oracle -> SEDB -> Motor BD
+
+grupos Usuarios
+
+carpetas y puntos de instalación
+
+archivos de oracle zip -> unzip en carpeta de instlacion
+
+verificar IP -ZAsignar ip a host
+
+definir variables de ambiente
+
+ejecutar Instalación
+------------------------------------------------------------------------
+su  - un usuario
+Comandos LINUX
+user:root
+pass:oracle
+
+groupadd oinstall
+groupadd dba
+
+useradd oracle -g oinstall -g dba
+
+passwd oracle
+
+mkdir -p /u01/app 
+
+
+mkdir -p /u01/install   --archivos a descomprimir
+
+  --dar privilegios al mismo usuario , grupo oinstall
+
+chown -R oracle:oinstall  /u01/app/ --usuario oracle que pertenezca al grupo oinstall y tenga acceso al directorio app
+
+chmod -R 775 /u01/app/ --puntos de instalación
+
+cd /u01/install/
+
+unzip p13390677_112040_Linux-x86-64_1of7.zip
+
+unzip p13390677_112040_Linux-x86-64_2of7.zip
+
+ifconfig --para ver la ip
+
+route -n --que red estas
+
+cd .. 
+
+vi /etc/hosts --editor de texto
+
+presionar i para insertar texto, esc, :wq para salvar y salir
+
+su - oracle    --cambiar de usuario root a oracle
+
+vi .bash_profile --editar el bash
+
+
+--las variables de ambiente sirve para apuntar a un directorio
+vu
+source .bash_profile --indica que los cambios están hechos
+                     --cambia las variables de ambiente que son hacia donde apuntan los 
+
+su - root
+
+xhost + --a la terminal activa que se puedan usar el modo grafico
+
+su oracle
+
+/u01/install/database/runInstaller
+
+install database only
+
+*el bash permite ir de un directorio a otro
+sour
+Listener la instancia doónde se monta la base de datos
+
+-ir al usuario oracle
+
+su oracle
+
+netca
+
+escojer listener configuration (default)
+
+add
+
+listener
+
+elejir protocolo tcp(default)
+
+puerto default 1521
+
+escojer el mismo puerto
+
+no
+
+listener
+
+
+
+ejecutar dbca
+
+
+Nombre de usuario: Eobreque
+Nombre de la base de Datos: Eo
+puerto netca ?
+depues del netca y antes del dbca
+borrar el contenido de la carpeta install la carpeta Database y sacarla de la basura
+activar hr -> pass hr
+cga -> 1gb
+
+*Global database : nombre (yoyo)
+
+*use the same administrative password
+
+*use oracle managed files
+
+Multiplex redo logs and controls files
+
+/u01/app/oracle/oradata
+
+/u01/app/oracle/fast_recovery_area
+
+password magnament hr hr
+
+Sample schemas
+
+su - Eobreque
+
+emctl start dbconsole
+
+****
+ORACLE_SID=orcl
+ORACLE_UNQNAME=orcl
+
+username:sys
+pass:
+
+sqlplus / as sysdba o sqlplus sysdba
+
+show parameter shared_pool_size
+
+sqlplus hr
+
+https://dbtest.duoc.cl:1158/em/
+
+-----------------------------------------
+-los archivos log errores de la base de datos(creacion,edicion,lectura) estan en el cfgtools
+-con los archivos de fast_recovery_area(recuperar la base de datos), oradata(datos ) esta el respaldo de la base datos
+
+
+-------------------------------------------------------
+usuario red:oracle
+pass:oracle
+
+usuario bd:sys
+pass:duoc
+lsnrctl start inicia los servicios del listener
+
+lsnrctl
+help   - para ver los comandos
+status - ver el estado
+version
+start
+--------------------------------------------------------
+si no funciona en otra terminal:
+su - root
+ifconfig ver ip
+vi /etc/hosts para ver que sea la misma ip
+source /etc/hosts
+lsnrctl start
+--------------------------------------------------------
+emctl start dbconsole - levantar el enterprise manager
+
+*en caso de que no podamos echar andar el em tenemos que modificar
+ el puerto en el archivo del listener
+
+Oracle Home /u01/app/oracle/product/11.2.0/db_home1
+
+LISTENER.ORA Location  /u01/app/oracle/product/11.2.0/db_home1/network/admin
+archivo de localización del listener, abrir el archivo con el gedit
+
+*el motor de base de datos necesita conexion hacia la red
+
+fallas de conexión: dbc
+ip o puerto
+
+puerto standar de oracle:1521
+
+buscar pda, cga: availability>advisor central>memory advisor
+
+
+listener>net services administration
+
+
+connect hr/hr@orcl; conecta el usuario hr a la bd
+
+tnsping dbtest.cuoc.cl:A521/orcl realiza ping 
+
+buscar tsname.ora
+
+y cambiar al inicio el ORCL y colocarle REMOTE_ORCL t proobar el tsping
+
+
+server>securty>user
+
+*tablespace sirve para almacenar tablas
+
+tablespace
+
+SERVER
+security
+profiles
+roles
+
+netca - crear listener
+Listener ->tsname.ora, listener.ora
+
+tnsping 192.168.222.135 - instruccion del sistema operativo pregunta si el listener esta operativo
+
+sqlplus connect
+
+listener.ora -> lsnrctl 
+
+el listener se crea
+
+una vez cambiado el listener debemos detenerlo con lsnrctl stop
+y iniciarlo nuevamente para que cambie el listener
+
+tnsname es el archivo que lee externamente el usuario
+
+dentro del sqlplus connect hr/hr@dbtest-duoc.cl:1522/orcl.duoc.cl
+
+connect
+Prueba Listener remote modificar el tsname.ora
+
+Ejercicio P
+rueba 
+1
+-tsname remote
+2
+-tablespace
+3-Undo
+4
+-usuarios y roles show query sql
+
+storage>tablespace
+
+undo
+-recuperar datos en caso de falla
